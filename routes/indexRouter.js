@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const indexController = require("../controllers/indexController");
 const indexRouter = Router();
-const passport = require("../controllers/passportController");
+// const passport = require("../controllers/passportController");
 
 indexRouter.get("/", indexController.indexPageGet);
 
