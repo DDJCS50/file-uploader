@@ -17,7 +17,8 @@ exports.indexPageGet = async (req, res, next) => {
     // console.log(allUsers);
 
     // await createCurrentUser();
-    await db.getAllCurrentUsers();
+    // await db.getAllCurrentUsers();
+    await db.getAllCurrentUsersNew();
     res.send("This is the main page");
   } catch (err) {
     return next(err);

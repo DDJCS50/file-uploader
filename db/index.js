@@ -1,10 +1,8 @@
-require("dotenv").config();
-// TODO CREATE CONSOLE READ FUNCTIONALITY
-const query = async (text, params) => {
+const query = async (selectedModelQuery) => {
   const start = Date.now();
-  // const res = await ;
+  const res = await selectedModelQuery();
   const duration = Date.now() - start;
-  console.log("executed query", { text, duration, rows: res.rowCount });
+  console.log("executed query", { res, duration });
   return res;
 };
 

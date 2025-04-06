@@ -19,3 +19,10 @@ model Buyer {
   email   String   @unique
   name    String?
 }
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String     // MediumText may be needed for MySql
+  expiresAt   DateTime
+}
