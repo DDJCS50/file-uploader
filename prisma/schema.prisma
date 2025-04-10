@@ -14,10 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Buyer {
+model EndUser {
   id      Int      @id @default(autoincrement())
   email   String   @unique
   name    String?
+  password String 
 }
 
 model Session {

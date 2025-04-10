@@ -1,9 +1,18 @@
 const { Router } = require("express");
 const indexController = require("../controllers/indexController");
 const indexRouter = Router();
-// const passport = require("../controllers/passportController");
+const passport = require("../db/passport-controller");
 
 indexRouter.get("/", indexController.indexPageGet);
+indexRouter.get("/login", indexController.loginGet);
+
+indexRouter.post(
+  "/login",
+  passport.authenticate("MyLocalStrategy", {
+    successRedirect: "/",
+    failureRedirect: "/",
+  })
+);
 
 indexRouter.use((req, res, next) => {
   console.log("Route does not exist");

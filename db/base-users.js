@@ -1,19 +1,19 @@
-const { Prisma } = require("../generated/client");
 const { prisma } = require("./client");
-// const db = require("../db/index.js");
 
 async function createCurrentUser() {
-  const firstUser = await prisma.buyer.upsert({
+  const firstUser = await prisma.EndUser.upsert({
     where: {
       email: "coolalice@prisma.io",
     },
     update: {
       name: "Alice",
       email: "coolalice@prisma.io",
+      password: "password",
     },
     create: {
       name: "Alice",
       email: "coolalice@prisma.io",
+      password: "password",
     },
   });
   console.log(firstUser);

@@ -1,19 +1,55 @@
-const expressSession = require("express-session");
-const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
-const { PrismaClient } = require("../generated/client");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcryptjs");
+const db = require("../db/queries");
 
-const exportedPassport = expressSession({
-  cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+const localStrategy = new LocalStrategy(
+  {
+    usernameField: "email",
+    passwordField: "password",
   },
-  secret: "a santa at nasa",
-  resave: true,
-  saveUninitialized: true,
-  store: new PrismaSessionStore(new PrismaClient(), {
-    checkPeriod: 2 * 60 * 1000, //ms
-    dbRecordIdIsSessionId: true,
-    dbRecordIdFunction: undefined,
-  }),
+  async (email, password, done) => {
+    try {
+      let user = await db.getUserByEmail(email);
+      console.log(user);
+
+      if (!user) {
+        console.log("no user");
+        return done(null, false, { message: "Incorrect email" });
+      }
+      ////TODO ADD BCRYPT TO PROJECT
+
+      // const match = await bcrypt.compare(password, user.password);
+      // if (!match) {
+      //   // passwords do not match!
+      //   return done(null, false, { message: "Incorrect password" });
+      // }
+      if (user.password !== password) {
+        console.log("wrong pass");
+        return done(null, false, { message: "Incorrect password" });
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  }
+);
+
+passport.use("MyLocalStrategy", localStrategy);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
 });
 
-module.exports = { exportedPassport };
+passport.deserializeUser(async (id, done) => {
+  try {
+    let user = await db.getUserById(id);
+
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
+
+module.exports = passport;
