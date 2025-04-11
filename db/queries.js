@@ -27,11 +27,22 @@ async function getUserById(searchedId) {
   return foundId;
 }
 
-async function insertUser(email, hashedPassword, name) {
+async function getUserByUsername(usernameSelected) {
+  const foundUser = await db.query(prisma.EndUser.findUnique, {
+    where: {
+      username: usernameSelected,
+    },
+  });
+  return foundUser;
+}
+
+async function insertUser(firstName, lastName, email, username, hashedPassword) {
   const createdUser = await db.query(prisma.EndUser.create, {
     data: {
       email: email,
-      name: name,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
       password: hashedPassword,
     },
   });
@@ -44,4 +55,5 @@ module.exports = {
   getAllCurrentUsersNew,
   getUserById,
   insertUser,
+  getUserByUsername,
 };

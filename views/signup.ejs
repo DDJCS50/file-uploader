@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+</head>
+
+<body>
+  <header>
+    <h1>Sign Up</h1>
+  </header>
+  <main>
+    <%- include("partials/errors.ejs") %>
+      <form action="/signup" method="POST">
+        <div>
+          <label for="email">Email: </label>
+          <input type="email" name="email" id="email">
+        </div>
+        <div>
+          <label for="username">Username: </label>
+          <input type="text" name="username" id="username">
+        </div>
+        <div>
+          <label for="firstName">First Name: </label>
+          <input type="text" name="firstName" id="firstName">
+        </div>
+        <div>
+          <label for="lastName">Last Name: </label>
+          <input type="text" name="lastName" id="lastName">
+        </div>
+        <div>
+          <label for="password">Password: </label>
+          <input type="password" name="password" id="password">
+          <ul>
+            <li>At least 8 characters long</li>
+            <li>One lowercase character</li>
+            <li>One uppercase character</li>
+            <li>One number</li>
+            <li>One symbol</li>
+          </ul>
+        </div>
+        <div>
+          <label for="passwordConfirm">Confirm Password: </label>
+          <input type="password" name="passwordConfirm" id="passwordConfirm">
+        </div>
+
+        <button type="submit">Sign Up</button>
+      </form>
+  </main>
+  <footer>
+    <h3>Copyright 2025 DDJCS50</h3>
+  </footer>
+</body>
+
+</html>

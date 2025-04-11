@@ -17,15 +17,10 @@ const localStrategy = new LocalStrategy(
         console.log("no user");
         return done(null, false, { message: "Incorrect email" });
       }
-      ////TODO ADD BCRYPT TO PROJECT
 
-      // const match = await bcrypt.compare(password, user.password);
-      // if (!match) {
-      //   // passwords do not match!
-      //   return done(null, false, { message: "Incorrect password" });
-      // }
-      if (user.password !== password) {
-        console.log("wrong pass");
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        // passwords do not match!
         return done(null, false, { message: "Incorrect password" });
       }
 

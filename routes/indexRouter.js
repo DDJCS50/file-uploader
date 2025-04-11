@@ -5,7 +5,9 @@ const passport = require("../db/passport-controller");
 
 indexRouter.get("/", indexController.indexPageGet);
 indexRouter.get("/login", indexController.loginGet);
+indexRouter.get("/signup", indexController.signupGet);
 
+indexRouter.post("/signup", indexController.signupPost);
 indexRouter.post(
   "/login",
   passport.authenticate("MyLocalStrategy", {
