@@ -40,6 +40,27 @@ exports.signupGet = (req, res, next) => {
   }
 };
 
+exports.uploadFileGet = (req, res, next) => {
+  try {
+    res.render("upload-file");
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
+exports.uploadFilePost = (req, res, next) => {
+  let fileSelected = req.file;
+  let size = fileSelected.fieldSize;
+  console.log(fileSelected, size);
+  try {
+    res.redirect("/");
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
 exports.signupPost = [
   validateFirstNameInput,
   validateLastNameInput,

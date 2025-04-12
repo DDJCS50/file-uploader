@@ -2,11 +2,31 @@ const { Router } = require("express");
 const indexController = require("../controllers/indexController");
 const indexRouter = Router();
 const passport = require("../db/passport-controller");
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "../uploads"));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = 1;
+    cb(null, file.originalname + "-" + uniqueSuffix);
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5,
+  },
+});
 
 indexRouter.get("/", indexController.indexPageGet);
 indexRouter.get("/login", indexController.loginGet);
 indexRouter.get("/signup", indexController.signupGet);
+indexRouter.get("/upload-file", indexController.uploadFileGet);
 
+indexRouter.post("/upload-file", upload.single("file"), indexController.uploadFilePost);
 indexRouter.post("/signup", indexController.signupPost);
 indexRouter.post(
   "/login",
@@ -16,7 +36,7 @@ indexRouter.post(
   })
 );
 
-indexRouter.use((req, res, next) => {
+indexRouter.get("*", (req, res, next) => {
   console.log("Route does not exist");
   res.status(404).send({
     status: 404,
