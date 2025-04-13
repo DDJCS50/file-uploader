@@ -1,8 +1,5 @@
 const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
-const { prisma } = require("../db/client");
-// instantiate userbase
-const { createCurrentUser } = require("../db/base-users.js");
 const bcrypt = require("bcryptjs");
 
 const alphaErr = "must only contain letters.";
@@ -13,6 +10,7 @@ const validateFirstNameInput = [body("firstName").trim().isAlpha("en-US", { igno
 const validateLastNameInput = [body("lastName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`Last name ${alphaErr}`)];
 const validatePassword = [body("password").trim().isStrongPassword().withMessage(`Password ${passErr}`)];
 const validateEmailInput = [body("email").trim().isEmail().withMessage(`Email ${emailErr}`)];
+const validateFolderNameInput = [body("name").trim().isAlpha("en-US", { ignore: " " }).withMessage(`File name ${alphaErr}`)];
 
 exports.indexPageGet = async (req, res, next) => {
   try {
@@ -43,6 +41,15 @@ exports.signupGet = (req, res, next) => {
 exports.uploadFileGet = (req, res, next) => {
   try {
     res.render("upload-file");
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
+exports.createFolderGet = (req, res, next) => {
+  try {
+    res.render("create-folder");
   } catch (err) {
     console.error(err);
     return next(err);
@@ -97,6 +104,40 @@ exports.signupPost = [
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
       await db.insertUser(firstName, lastName, email, username, hashedPassword);
+
+      res.redirect("/");
+    } catch (err) {
+      console.error("Error creating user:", err);
+      return next(err);
+    }
+  },
+];
+
+exports.createFolderPost = [
+  validateFolderNameInput,
+  async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      console.log(errors);
+      return res.status(400).render("create-folder", {
+        errors: errors.array(),
+      });
+    }
+
+    let { name } = req.body;
+
+    const folderSelected = await db.getFolderByName(name);
+    const folderNameError = [{ msg: "Folder name already exists" }];
+
+    if (folderSelected) {
+      return res.status(400).render("create-folder", {
+        errors: folderNameError,
+      });
+    }
+
+    try {
+      await db.insertFolder(name);
 
       res.redirect("/");
     } catch (err) {

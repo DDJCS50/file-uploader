@@ -36,6 +36,15 @@ async function getUserByUsername(usernameSelected) {
   return foundUser;
 }
 
+async function getFolderByName(name) {
+  const foundFolder = await db.query(prisma.Folders.findUnique, {
+    where: {
+      name: name,
+    },
+  });
+  return foundFolder;
+}
+
 async function insertUser(firstName, lastName, email, username, hashedPassword) {
   const createdUser = await db.query(prisma.EndUser.create, {
     data: {
@@ -50,10 +59,22 @@ async function insertUser(firstName, lastName, email, username, hashedPassword) 
   return createdUser;
 }
 
+async function insertFolder(name) {
+  const createdFolder = await db.query(prisma.Folders.create, {
+    data: {
+      name: name,
+    },
+  });
+  // console.log(createdUser);
+  return createdFolder;
+}
+
 module.exports = {
   getUserByEmail,
   getAllCurrentUsersNew,
   getUserById,
   insertUser,
+  getFolderByName,
   getUserByUsername,
+  insertFolder,
 };

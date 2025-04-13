@@ -29,3 +29,16 @@ model Session {
   data      String     // MediumText may be needed for MySql
   expiresAt   DateTime
 }
+
+model Folders {
+  id   Int   @id @default(autoincrement())
+  name String @unique
+  files Files[]
+}
+
+model Files {
+  id   Int   @id @default(autoincrement())
+  name String @unique
+  folder Folders @relation(fields: [folderId], references: [id])
+  folderId Int
+}

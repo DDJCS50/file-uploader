@@ -16,8 +16,17 @@
     <%- include("partials/errors.ejs") %>
       <% if (locals.currentUser) {%>
         <h1>
-          Welcome Back <%= currentUser.email %>
+          What folder would you like to make, <%= currentUser.email %>?
         </h1>
+
+        <form action="/create-folder" method="POST">
+          <div>
+            <label for="name">Name: </label>
+            <input type="text" name="name" id="name">
+          </div>
+
+          <button type="submit">Create Folder</button>
+        </form>
 
         <% } else { %>
           <h1>Login</h1>

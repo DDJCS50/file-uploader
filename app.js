@@ -10,12 +10,12 @@ const assetsPath = path.join(__dirname, "public");
 const passport = require("passport");
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(assetsPath));
 
 app.use(exportedSession);
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(express.static(assetsPath));
 app.use(express.static(__dirname));
 
 app.use((req, res, next) => {
