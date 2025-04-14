@@ -26,6 +26,7 @@ indexRouter.get("/login", indexController.loginGet);
 indexRouter.get("/signup", indexController.signupGet);
 indexRouter.get("/upload-file", indexController.uploadFileGet);
 indexRouter.get("/create-folder", indexController.createFolderGet);
+indexRouter.get("/open-folder/:name", indexController.openFolderGet);
 
 indexRouter.post("/create-folder", indexController.createFolderPost);
 indexRouter.post("/upload-file", upload.single("file"), indexController.uploadFilePost);

@@ -56,6 +56,23 @@ exports.createFolderGet = (req, res, next) => {
   }
 };
 
+exports.openFolderGet = async (req, res, next) => {
+  const nameSelected = req.params.name;
+  console.log(nameSelected);
+  const folder = await db.getFolderByName(nameSelected);
+  /// TODO CREATE FILES AND DISPLAY THEM IN FOLDER PAGE
+  const files = [
+    { name: "tempFile", id: 24 },
+    { name: "tempFile2", id: 34 },
+  ];
+  try {
+    res.render("open-folder", { folder: folder, files: files });
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
 exports.uploadFilePost = (req, res, next) => {
   let fileSelected = req.file;
   let size = fileSelected.fieldSize;
