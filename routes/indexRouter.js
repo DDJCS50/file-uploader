@@ -14,6 +14,7 @@ const storage = multer.diskStorage({
     cb(null, file.originalname + "-" + uniqueSuffix);
   },
 });
+///REFACTOR TO DB INSTEAD OF LOCAL
 const upload = multer({
   storage: storage,
   limits: {
@@ -24,12 +25,15 @@ const upload = multer({
 indexRouter.get("/", indexController.indexPageGet);
 indexRouter.get("/login", indexController.loginGet);
 indexRouter.get("/signup", indexController.signupGet);
-indexRouter.get("/upload-file", indexController.uploadFileGet);
+indexRouter.get("/upload-file/:name", indexController.uploadFileGet);
 indexRouter.get("/create-folder", indexController.createFolderGet);
 indexRouter.get("/open-folder/:name", indexController.openFolderGet);
+indexRouter.get("/update-folder/:name", indexController.updateFolderGet);
 
+indexRouter.post("/update-folder/:name", indexController.updateFolderPost);
 indexRouter.post("/create-folder", indexController.createFolderPost);
-indexRouter.post("/upload-file", upload.single("file"), indexController.uploadFilePost);
+///REMOVE FILE UPLOAD UNTIL FILE STORING IN DB IS SET UP, upload.single("file")
+indexRouter.post("/upload-file/:name", indexController.uploadFilePost);
 indexRouter.post("/signup", indexController.signupPost);
 indexRouter.post(
   "/login",

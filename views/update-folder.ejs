@@ -15,10 +15,46 @@
   <main>
     <%- include("partials/errors.ejs") %>
       <% if (locals.currentUser) {%>
-        <form action="/upload-file/<% folder.name %>" method="POST" enctype="multipart/form-data">
-          <input type="file" name="file" />
-          <button type="submit">Store File</button>
+        <div>
+
+          <ul>
+            <% if (locals.folder) {%>
+
+              <li>
+                <%= folder.name %>
+              </li>
+
+              <% } %>
+          </ul>
+        </div>
+
+        <div>
+
+          <ul>
+            <% if (locals.files) {%>
+              <% files.forEach(file=> { %>
+                <a href="/file/<%= file.id %>">
+
+                  <li>
+                    <%= file.name %>
+                      <br>
+                      <%= file.id %>
+                  </li>
+                </a>
+                <% }); %>
+                  <% } %>
+          </ul>
+        </div>
+
+        <form action="/update-folder/<%= folder.name %>" method="POST">
+          <div>
+            <label for="name">New Name: </label>
+            <input type="text" name="name" id="name">
+          </div>
+
+          <button type="submit">Update Folder</button>
         </form>
+
 
         <% } else { %>
           <h1>Login</h1>

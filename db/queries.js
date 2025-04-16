@@ -59,7 +59,7 @@ async function insertUser(firstName, lastName, email, username, hashedPassword) 
   return createdUser;
 }
 
-async function insertFolder(name) {
+async function insertFolderByName(name) {
   const createdFolder = await db.query(prisma.Folders.create, {
     data: {
       name: name,
@@ -69,6 +69,19 @@ async function insertFolder(name) {
   return createdFolder;
 }
 
+async function updateFolderByName(newName, oldName) {
+  const updateFolder = await prisma.Folders.update({
+    where: {
+      name: oldName,
+    },
+    data: {
+      name: newName,
+    },
+  });
+
+  return updateFolder;
+}
+
 module.exports = {
   getUserByEmail,
   getAllCurrentUsersNew,
@@ -76,5 +89,6 @@ module.exports = {
   insertUser,
   getFolderByName,
   getUserByUsername,
-  insertFolder,
+  insertFolderByName,
+  updateFolderByName,
 };

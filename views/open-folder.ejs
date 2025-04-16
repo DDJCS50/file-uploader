@@ -46,6 +46,13 @@
           </ul>
         </div>
 
+        <div>
+          <a href="/update-folder/<%= folder.name %>">Update Category</a>
+        </div>
+        <div>
+          <a href="/upload-file/<%= folder.name %>">Upload your files</a>
+        </div>
+
         <% } else { %>
           <h1>Login</h1>
           <form action="/login" method="POST">

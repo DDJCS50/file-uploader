@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const alphaErr = "must only contain letters.";
 const passErr = "must be at least 8 characters long, contain at least one of each: lowercase letter, uppercase letter, number, symbol";
 const emailErr = "must be a valid email, example@gmail.com";
+const folderNameError = [{ msg: "Folder Not Found" }];
 
 const validateFirstNameInput = [body("firstName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`First name ${alphaErr}`)];
 const validateLastNameInput = [body("lastName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`Last name ${alphaErr}`)];
@@ -38,9 +39,17 @@ exports.signupGet = (req, res, next) => {
   }
 };
 
-exports.uploadFileGet = (req, res, next) => {
+exports.uploadFileGet = async (req, res, next) => {
+  const nameSelected = req.params.name;
+  const folder = await db.getFolderByName(nameSelected);
+
+  if (!folder) {
+    return res.status(400).render("index-page", {
+      errors: folderNameError,
+    });
+  }
   try {
-    res.render("upload-file");
+    res.render("upload-file", { folder: folder });
   } catch (err) {
     console.error(err);
     return next(err);
@@ -58,8 +67,13 @@ exports.createFolderGet = (req, res, next) => {
 
 exports.openFolderGet = async (req, res, next) => {
   const nameSelected = req.params.name;
-  console.log(nameSelected);
   const folder = await db.getFolderByName(nameSelected);
+
+  if (!folder) {
+    return res.status(400).render("index-page", {
+      errors: folderNameError,
+    });
+  }
   /// TODO CREATE FILES AND DISPLAY THEM IN FOLDER PAGE
   const files = [
     { name: "tempFile", id: 24 },
@@ -73,10 +87,28 @@ exports.openFolderGet = async (req, res, next) => {
   }
 };
 
+exports.updateFolderGet = async (req, res, next) => {
+  const nameSelected = req.params.name;
+  const folder = await db.getFolderByName(nameSelected);
+
+  const files = [
+    { name: "tempFile", id: 24 },
+    { name: "tempFile2", id: 34 },
+  ];
+
+  try {
+    res.render("update-folder", { folder: folder, files: files });
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
 exports.uploadFilePost = (req, res, next) => {
   let fileSelected = req.file;
-  let size = fileSelected.fieldSize;
+  let size = fileSelected.size;
   console.log(fileSelected, size);
+  ///TEST FILE UPLOADING
   try {
     res.redirect("/");
   } catch (err) {
@@ -145,7 +177,6 @@ exports.createFolderPost = [
     let { name } = req.body;
 
     const folderSelected = await db.getFolderByName(name);
-    const folderNameError = [{ msg: "Folder name already exists" }];
 
     if (folderSelected) {
       return res.status(400).render("create-folder", {
@@ -154,8 +185,42 @@ exports.createFolderPost = [
     }
 
     try {
-      await db.insertFolder(name);
+      await db.insertFolderByName(name);
+      res.redirect("/");
+    } catch (err) {
+      console.error("Error creating user:", err);
+      return next(err);
+    }
+  },
+];
 
+exports.updateFolderPost = [
+  validateFolderNameInput,
+  async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      console.log(errors);
+      return res.status(400).render("create-folder", {
+        errors: errors.array(),
+      });
+    }
+
+    const oldName = req.params.name;
+    console.log(oldName);
+    const { name } = req.body;
+    console.log(name);
+
+    const folderSelected = await db.getFolderByName(name);
+
+    if (folderSelected) {
+      return res.status(400).render("update-folder", {
+        errors: folderNameError,
+      });
+    }
+
+    try {
+      await db.updateFolderByName(name, oldName);
       res.redirect("/");
     } catch (err) {
       console.error("Error creating user:", err);
