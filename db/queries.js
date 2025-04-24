@@ -7,13 +7,13 @@ async function getUserByEmail(emailSelected) {
       email: emailSelected,
     },
   });
-  // console.log(foundEmail);
+
   return foundEmail;
 }
 
 async function getAllCurrentUsersNew() {
   const { rows } = await db.query(prisma.EndUser.findMany);
-  // console.log(rows);
+
   return rows;
 }
 
@@ -23,7 +23,7 @@ async function getUserById(searchedId) {
       id: searchedId,
     },
   });
-  // console.log(foundId);
+
   return foundId;
 }
 
@@ -41,6 +41,21 @@ async function getFolderByName(name) {
     where: {
       name: name,
     },
+    include: {
+      files: true,
+    },
+  });
+  return foundFolder;
+}
+
+async function getFolderById(idSelected) {
+  const foundFolder = await db.query(prisma.Folders.findUnique, {
+    where: {
+      id: idSelected,
+    },
+    include: {
+      files: true,
+    },
   });
   return foundFolder;
 }
@@ -55,7 +70,7 @@ async function insertUser(firstName, lastName, email, username, hashedPassword) 
       password: hashedPassword,
     },
   });
-  // console.log(createdUser);
+
   return createdUser;
 }
 
@@ -65,7 +80,7 @@ async function insertFolderByName(name) {
       name: name,
     },
   });
-  // console.log(createdUser);
+
   return createdFolder;
 }
 
@@ -82,6 +97,22 @@ async function updateFolderByName(newName, oldName) {
   return updateFolder;
 }
 
+async function deleteFolderById(folderIdSelected) {
+  const deleteFiles = prisma.Files.deleteMany({
+    where: {
+      folderId: folderIdSelected,
+    },
+  });
+
+  const deleteFolder = prisma.Folders.delete({
+    where: {
+      id: folderIdSelected,
+    },
+  });
+
+  const transaction = await prisma.$transaction([deleteFiles, deleteFolder]);
+}
+
 module.exports = {
   getUserByEmail,
   getAllCurrentUsersNew,
@@ -91,4 +122,6 @@ module.exports = {
   getUserByUsername,
   insertFolderByName,
   updateFolderByName,
+  deleteFolderById,
+  getFolderById,
 };

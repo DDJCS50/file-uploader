@@ -30,6 +30,7 @@ indexRouter.get("/create-folder", indexController.createFolderGet);
 indexRouter.get("/open-folder/:name", indexController.openFolderGet);
 indexRouter.get("/update-folder/:name", indexController.updateFolderGet);
 
+indexRouter.post("/delete-folder/:id", indexController.deleteFolderPost);
 indexRouter.post("/update-folder/:name", indexController.updateFolderPost);
 indexRouter.post("/create-folder", indexController.createFolderPost);
 ///REMOVE FILE UPLOAD UNTIL FILE STORING IN DB IS SET UP, upload.single("file")

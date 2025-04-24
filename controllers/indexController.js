@@ -1,6 +1,7 @@
 const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
 const bcrypt = require("bcryptjs");
+const { createBaseFiles } = require("../db/base-users");
 
 const alphaErr = "must only contain letters.";
 const passErr = "must be at least 8 characters long, contain at least one of each: lowercase letter, uppercase letter, number, symbol";
@@ -14,6 +15,7 @@ const validateEmailInput = [body("email").trim().isEmail().withMessage(`Email ${
 const validateFolderNameInput = [body("name").trim().isAlpha("en-US", { ignore: " " }).withMessage(`File name ${alphaErr}`)];
 
 exports.indexPageGet = async (req, res, next) => {
+  // const files = createBaseFiles();
   try {
     res.render("index-page");
   } catch (err) {
@@ -75,10 +77,9 @@ exports.openFolderGet = async (req, res, next) => {
     });
   }
   /// TODO CREATE FILES AND DISPLAY THEM IN FOLDER PAGE
-  const files = [
-    { name: "tempFile", id: 24 },
-    { name: "tempFile2", id: 34 },
-  ];
+  const files = folder.files;
+  console.log(files);
+
   try {
     res.render("open-folder", { folder: folder, files: files });
   } catch (err) {
@@ -91,10 +92,7 @@ exports.updateFolderGet = async (req, res, next) => {
   const nameSelected = req.params.name;
   const folder = await db.getFolderByName(nameSelected);
 
-  const files = [
-    { name: "tempFile", id: 24 },
-    { name: "tempFile2", id: 34 },
-  ];
+  const files = folder.files;
 
   try {
     res.render("update-folder", { folder: folder, files: files });
@@ -188,7 +186,7 @@ exports.createFolderPost = [
       await db.insertFolderByName(name);
       res.redirect("/");
     } catch (err) {
-      console.error("Error creating user:", err);
+      console.error("Error creating folder:", err);
       return next(err);
     }
   },
@@ -223,8 +221,29 @@ exports.updateFolderPost = [
       await db.updateFolderByName(name, oldName);
       res.redirect("/");
     } catch (err) {
-      console.error("Error creating user:", err);
+      console.error("Error updating folder:", err);
       return next(err);
     }
   },
 ];
+
+exports.deleteFolderPost = async (req, res, next) => {
+  const errors = validationResult(req);
+  const folderId = req.params.id;
+  if (!folderId) {
+    return res.status(400).render("index-page", {
+      errors: folderNameError,
+    });
+  }
+
+  const selectedFolder = await db.getFolderById(Number(folderId));
+  console.log(selectedFolder.id);
+
+  try {
+    await db.deleteFolderById(selectedFolder.id);
+    res.redirect("/");
+  } catch (err) {
+    console.error("Error deleting folder:", err);
+    return next(err);
+  }
+};
