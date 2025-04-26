@@ -11,6 +11,19 @@
 <body>
   <header>
     <h1>Odin Drive</h1>
+    <ul>
+      <% if (locals.currentUser) {%>
+        <% folders.forEach(folder=> { %>
+          <a href="/open-folder/<%= folder.name%>">
+
+            <li>
+              <%= folder.name %>
+            </li>
+          </a>
+
+          <% })%>
+            <% } %>
+    </ul>
   </header>
   <main>
     <%- include("partials/errors.ejs") %>
@@ -18,6 +31,7 @@
         <h1>
           Welcome Back <%= currentUser.email %>
         </h1>
+        <a href="/create-folder">Create Folder</a>
 
         <% } else { %>
           <h1>Login</h1>

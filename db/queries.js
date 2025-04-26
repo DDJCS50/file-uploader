@@ -11,8 +11,8 @@ async function getUserByEmail(emailSelected) {
   return foundEmail;
 }
 
-async function getAllCurrentUsersNew() {
-  const { rows } = await db.query(prisma.EndUser.findMany);
+async function getAllFolders() {
+  const rows = await db.query(prisma.Folders.findMany);
 
   return rows;
 }
@@ -115,7 +115,6 @@ async function deleteFolderById(folderIdSelected) {
 
 module.exports = {
   getUserByEmail,
-  getAllCurrentUsersNew,
   getUserById,
   insertUser,
   getFolderByName,
@@ -124,4 +123,5 @@ module.exports = {
   updateFolderByName,
   deleteFolderById,
   getFolderById,
+  getAllFolders,
 };

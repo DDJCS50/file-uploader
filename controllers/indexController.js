@@ -16,8 +16,10 @@ const validateFolderNameInput = [body("name").trim().isAlpha("en-US", { ignore: 
 
 exports.indexPageGet = async (req, res, next) => {
   // const files = createBaseFiles();
+  const folders = await db.getAllFolders();
+  console.log(folders);
   try {
-    res.render("index-page");
+    res.render("index-page", { folders: folders });
   } catch (err) {
     return next(err);
   }
