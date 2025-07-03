@@ -6,7 +6,10 @@ const { createBaseFiles } = require("../db/base-users");
 const alphaErr = "must only contain letters.";
 const passErr = "must be at least 8 characters long, contain at least one of each: lowercase letter, uppercase letter, number, symbol";
 const emailErr = "must be a valid email, example@gmail.com";
-const folderNameError = [{ msg: "Folder Not Found" }];
+const folderNameErr = [{ msg: "Folder Not Found" }];
+const folderFoundErr = [{ msg: "Folder Already Exists" }];
+const fileFoundsErr = [{ msg: "File Already Exists" }];
+const noUserErr = [{ msg: "No user found" }];
 
 const validateFirstNameInput = [body("firstName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`First name ${alphaErr}`)];
 const validateLastNameInput = [body("lastName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`Last name ${alphaErr}`)];
@@ -17,7 +20,7 @@ const validateFolderNameInput = [body("name").trim().isAlpha("en-US", { ignore: 
 exports.indexPageGet = async (req, res, next) => {
   // const files = createBaseFiles();
   const folders = await db.getAllFolders();
-  console.log(folders);
+
   try {
     res.render("index-page", { folders: folders });
   } catch (err) {
@@ -47,11 +50,14 @@ exports.uploadFileGet = async (req, res, next) => {
   const nameSelected = req.params.name;
   const folder = await db.getFolderByName(nameSelected);
 
+  const folders = await db.getAllFolders();
   if (!folder) {
     return res.status(400).render("index-page", {
-      errors: folderNameError,
+      errors: folderNameErr,
+      folders: folders,
     });
   }
+
   try {
     res.render("upload-file", { folder: folder });
   } catch (err) {
@@ -72,15 +78,17 @@ exports.createFolderGet = (req, res, next) => {
 exports.openFolderGet = async (req, res, next) => {
   const nameSelected = req.params.name;
   const folder = await db.getFolderByName(nameSelected);
+  const foldersSelected = res.locals.folders;
 
+  const folders = await db.getAllFolders();
   if (!folder) {
     return res.status(400).render("index-page", {
-      errors: folderNameError,
+      errors: folderNameErr,
+      folders: folders,
     });
   }
   /// TODO CREATE FILES AND DISPLAY THEM IN FOLDER PAGE
   const files = folder.files;
-  console.log(files);
 
   try {
     res.render("open-folder", { folder: folder, files: files });
@@ -104,12 +112,48 @@ exports.updateFolderGet = async (req, res, next) => {
   }
 };
 
-exports.uploadFilePost = (req, res, next) => {
-  let fileSelected = req.file;
-  let size = fileSelected.size;
-  console.log(fileSelected, size);
-  ///TEST FILE UPLOADING
+exports.uploadFilePost = async (req, res, next) => {
+  const fileSelected = req.file;
+  const fileType = fileSelected.originalname.slice(fileSelected.originalname.indexOf("."));
+  const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-1").concat(fileType);
+  let fileAlreadyExists = await db.getFileByName(renamedFile);
+
+  const folders = await db.getAllFolders();
+
+  if (fileAlreadyExists) {
+    return res.status(400).render("index-page", {
+      errors: fileFoundsErr,
+      folders: folders,
+    });
+  }
+
+  const folderSelect = req.params.name;
+  let folderExists = await db.getFolderByName(folderSelect);
+
+  const user = res.locals.currentUser;
+
+  if (!folderExists) {
+    return res.status(400).render("index-page", {
+      errors: folderNameErr,
+      folders: folders,
+    });
+  }
+
+  if (!user) {
+    return res.status(400).render("index-page", {
+      errors: noUserErr,
+      folders: folders,
+    });
+  }
+
+  // let stringyData = fileSelected.buffer.toString("utf8");
+  let stringyData = JSON.stringify(fileSelected.buffer).toString("base64");
+  let unStringedData = JSON.parse(stringyData);
+
+  console.log(renamedFile);
+
   try {
+    await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileSelected.mimetype, unStringedData);
     res.redirect("/");
   } catch (err) {
     console.error(err);
@@ -175,17 +219,18 @@ exports.createFolderPost = [
     }
 
     let { name } = req.body;
+    let userSelected = res.locals.currentUser;
 
     const folderSelected = await db.getFolderByName(name);
 
     if (folderSelected) {
       return res.status(400).render("create-folder", {
-        errors: folderNameError,
+        errors: folderFoundErr,
       });
     }
 
     try {
-      await db.insertFolderByName(name);
+      await db.insertFolderByName(name, userSelected);
       res.redirect("/");
     } catch (err) {
       console.error("Error creating folder:", err);
@@ -207,15 +252,14 @@ exports.updateFolderPost = [
     }
 
     const oldName = req.params.name;
-    console.log(oldName);
+
     const { name } = req.body;
-    console.log(name);
 
     const folderSelected = await db.getFolderByName(name);
 
     if (folderSelected) {
       return res.status(400).render("update-folder", {
-        errors: folderNameError,
+        errors: folderNameErr,
       });
     }
 
@@ -232,14 +276,16 @@ exports.updateFolderPost = [
 exports.deleteFolderPost = async (req, res, next) => {
   const errors = validationResult(req);
   const folderId = req.params.id;
+
+  const folders = await db.getAllFolders();
   if (!folderId) {
     return res.status(400).render("index-page", {
-      errors: folderNameError,
+      errors: folderNameErr,
+      folders: folders,
     });
   }
 
   const selectedFolder = await db.getFolderById(Number(folderId));
-  console.log(selectedFolder.id);
 
   try {
     await db.deleteFolderById(selectedFolder.id);

@@ -15,28 +15,29 @@
   <main>
     <%- include("partials/errors.ejs") %>
       <% if (locals.currentUser) {%>
-        <form action="/upload-file/<% folder.name %>" method="POST" enctype="multipart/form-data">
-          <input type="file" name="file" />
-          <button type="submit">Store File</button>
-        </form>
-
-        <% } else { %>
-          <h1>Login</h1>
-          <form action="/login" method="POST">
-
-            <div>
-              <label for="email">Email: </label>
-              <input type="email" name="email" id="email">
-            </div>
-            <div>
-              <label for="password">Password: </label>
-              <input type="password" name="password" id="password">
-
-            </div>
-
-            <button type="submit">Login</button>
+        <% console.log(folder.name) %>
+          <form action="/upload-file/<%= folder.name %>" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" />
+            <button type="submit">Store File</button>
           </form>
-          <%}%>
+
+          <% } else { %>
+            <h1>Login</h1>
+            <form action="/login" method="POST">
+
+              <div>
+                <label for="email">Email: </label>
+                <input type="email" name="email" id="email">
+              </div>
+              <div>
+                <label for="password">Password: </label>
+                <input type="password" name="password" id="password">
+
+              </div>
+
+              <button type="submit">Login</button>
+            </form>
+            <%}%>
   </main>
   <footer>
     <h3>Copyright 2025 DDJCS50</h3>

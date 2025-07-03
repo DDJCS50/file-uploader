@@ -21,6 +21,7 @@ model EndUser {
   firstName    String
   lastName    String
   password String 
+  folders Folders[]
 }
 
 model Session {
@@ -33,6 +34,8 @@ model Session {
 model Folders {
   id   Int   @id @default(autoincrement())
   name String @unique
+  endUser EndUser @relation(fields: [endUserId], references: [id])
+  endUserId Int
   files Files[]
 }
 
@@ -41,4 +44,8 @@ model Files {
   name String @unique
   folder Folders @relation(fields: [folderId], references: [id])
   folderId Int
+  uploadedAt DateTime @default(now())
+  size Int
+  mimetype String
+  buffer Bytes
 }

@@ -74,14 +74,44 @@ async function insertUser(firstName, lastName, email, username, hashedPassword) 
   return createdUser;
 }
 
-async function insertFolderByName(name) {
+async function insertFolderByName(name, userSelected) {
   const createdFolder = await db.query(prisma.Folders.create, {
     data: {
       name: name,
+      endUser: {
+        connect: {
+          email: userSelected.email,
+        },
+      },
     },
   });
 
   return createdFolder;
+}
+
+async function insertFile(folderName, fileName, fileSize, fileMimetype, fileBuffer) {
+  const updatedFolder = await db.query(prisma.Folders.update, {
+    where: {
+      name: folderName,
+    },
+    data: {
+      files: {
+        create: { size: fileSize, name: fileName, mimetype: fileMimetype, buffer: Uint8Array.from(fileBuffer) },
+      },
+    },
+  });
+
+  return updatedFolder;
+}
+
+async function getFileByName(fileName) {
+  const fileFound = await db.query(prisma.Files.findUnique, {
+    where: {
+      name: fileName,
+    },
+  });
+
+  return fileFound;
 }
 
 async function updateFolderByName(newName, oldName) {
@@ -124,4 +154,6 @@ module.exports = {
   deleteFolderById,
   getFolderById,
   getAllFolders,
+  insertFile,
+  getFileByName,
 };

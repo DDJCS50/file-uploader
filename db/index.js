@@ -5,7 +5,7 @@ const query = async (selectedModelQuery, parameter) => {
   const start = Date.now();
   const res = await selectedModelQuery(parameter);
   const duration = Date.now() - start;
-  console.log("executed query", { parameter, res, duration });
+  // console.log("executed query", { parameter, res, duration });
   return res;
 };
 

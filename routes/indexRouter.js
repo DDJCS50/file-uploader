@@ -5,18 +5,18 @@ const passport = require("../db/passport-controller");
 const multer = require("multer");
 const path = require("path");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../uploads"));
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = 1;
-    cb(null, file.originalname + "-" + uniqueSuffix);
-  },
-});
-///REFACTOR TO DB INSTEAD OF LOCAL
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, path.join(__dirname, "../uploads"));
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = 1;
+//     cb(null, file.originalname + "-" + uniqueSuffix);
+//   },
+// });
+
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 1024 * 1024 * 5,
   },
@@ -33,8 +33,7 @@ indexRouter.get("/update-folder/:name", indexController.updateFolderGet);
 indexRouter.post("/delete-folder/:id", indexController.deleteFolderPost);
 indexRouter.post("/update-folder/:name", indexController.updateFolderPost);
 indexRouter.post("/create-folder", indexController.createFolderPost);
-///REMOVE FILE UPLOAD UNTIL FILE STORING IN DB IS SET UP, upload.single("file")
-indexRouter.post("/upload-file/:name", indexController.uploadFilePost);
+indexRouter.post("/upload-file/:name", upload.single("file"), indexController.uploadFilePost);
 indexRouter.post("/signup", indexController.signupPost);
 indexRouter.post(
   "/login",
