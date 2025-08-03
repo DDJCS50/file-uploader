@@ -21,7 +21,9 @@
             <% if (locals.folder) {%>
 
               <li>
-                <%= folder.name %>
+                <h2>
+                  <%= folder.name %>
+                </h2>
               </li>
 
               <% } %>
@@ -33,13 +35,25 @@
           <ul>
             <% if (locals.files) {%>
               <% files.forEach(file=> { %>
-                <a href="/file/<%= file.id %>">
 
-                  <li>
-                    <%= file.name %>
-                      <br>
-                      <%= file.id %>
-                  </li>
+                <li>
+                  <br>
+                  <h2>
+                    Name: <%= file.name %>
+                  </h2>
+                  <h2>
+                    Size: <%= (file.size/ 1000) %> MB
+                  </h2>
+                  <h2>
+                    Upload Time: <%= file.uploadedAt %>
+                  </h2>
+                  <form action="/download-file/<%= folder.name %>/<%= file.name %>" method="GET">
+                    <button type="submit" onclick="return confirm('Download File?');">Download File: <%= file.name %> </button>
+
+                  </form>
+                  <br>
+                  <br>
+                </li>
                 </a>
                 <% }); %>
                   <% } %>
@@ -53,8 +67,7 @@
           <a href="/upload-file/<%= folder.name %>">Upload your files</a>
         </div>
         <form action="/delete-folder/<%= folder.id %>" method="POST" style="display:inline;">
-          <button type="submit" onclick="return confirm('Are you sure you want to delete this file?');">Delete
-            Folder</button>
+          <button type="submit" onclick="return confirm('Are you sure you want to delete this folder?');">Delete Folder</button>
         </form>
 
         <% } else { %>

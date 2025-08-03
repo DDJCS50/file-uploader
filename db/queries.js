@@ -11,10 +11,17 @@ async function getUserByEmail(emailSelected) {
   return foundEmail;
 }
 
-async function getAllFolders() {
-  const rows = await db.query(prisma.Folders.findMany);
-
-  return rows;
+async function getAllFolders(user) {
+  if (user) {
+    const rows = await db.query(prisma.Folders.findMany, {
+      where: {
+        endUserId: user.id,
+      },
+    });
+    return rows;
+  } else {
+    return;
+  }
 }
 
 async function getUserById(searchedId) {
@@ -96,7 +103,7 @@ async function insertFile(folderName, fileName, fileSize, fileMimetype, fileBuff
     },
     data: {
       files: {
-        create: { size: fileSize, name: fileName, mimetype: fileMimetype, buffer: Uint8Array.from(fileBuffer) },
+        create: { size: fileSize, name: fileName, mimetype: fileMimetype, buffer: new Uint8Array(fileBuffer) },
       },
     },
   });

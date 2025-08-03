@@ -18,8 +18,10 @@ const validateEmailInput = [body("email").trim().isEmail().withMessage(`Email ${
 const validateFolderNameInput = [body("name").trim().isAlpha("en-US", { ignore: " " }).withMessage(`File name ${alphaErr}`)];
 
 exports.indexPageGet = async (req, res, next) => {
-  // const files = createBaseFiles();
-  const folders = await db.getAllFolders();
+  let userSelected = res.locals.currentUser;
+  const folders = await db.getAllFolders(userSelected);
+
+  console.log(folders);
 
   try {
     res.render("index-page", { folders: folders });
@@ -50,7 +52,7 @@ exports.uploadFileGet = async (req, res, next) => {
   const nameSelected = req.params.name;
   const folder = await db.getFolderByName(nameSelected);
 
-  const folders = await db.getAllFolders();
+  const folders = await db.getAllFolders(res.locals.currentUser);
   if (!folder) {
     return res.status(400).render("index-page", {
       errors: folderNameErr,
@@ -60,6 +62,43 @@ exports.uploadFileGet = async (req, res, next) => {
 
   try {
     res.render("upload-file", { folder: folder });
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
+exports.downloadFileGet = async (req, res, next) => {
+  const nameSelected = req.params.name;
+  const folder = await db.getFolderByName(nameSelected);
+
+  const fileNameSelected = req.params.fileName;
+  let fileAlreadyExists = await db.getFileByName(fileNameSelected);
+
+  const folders = await db.getAllFolders(res.locals.currentUser);
+  if (!fileAlreadyExists) {
+    return res.status(400).render("index-page", {
+      errors: fileFoundsErr,
+      folders: folders,
+    });
+  }
+
+  if (!folder) {
+    return res.status(400).render("index-page", {
+      errors: folderNameErr,
+      folders: folders,
+    });
+  }
+
+  console.log(fileAlreadyExists);
+
+  let content = Buffer.from(fileAlreadyExists.buffer.buffer);
+
+  res.contentType(fileAlreadyExists.mimetype);
+  res.attachment(`${fileAlreadyExists.name}`);
+
+  try {
+    res.send(content);
   } catch (err) {
     console.error(err);
     return next(err);
@@ -80,7 +119,7 @@ exports.openFolderGet = async (req, res, next) => {
   const folder = await db.getFolderByName(nameSelected);
   const foldersSelected = res.locals.folders;
 
-  const folders = await db.getAllFolders();
+  const folders = await db.getAllFolders(res.locals.currentUser);
   if (!folder) {
     return res.status(400).render("index-page", {
       errors: folderNameErr,
@@ -118,7 +157,7 @@ exports.uploadFilePost = async (req, res, next) => {
   const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-1").concat(fileType);
   let fileAlreadyExists = await db.getFileByName(renamedFile);
 
-  const folders = await db.getAllFolders();
+  const folders = await db.getAllFolders(res.locals.currentUser);
 
   if (fileAlreadyExists) {
     return res.status(400).render("index-page", {
@@ -146,14 +185,13 @@ exports.uploadFilePost = async (req, res, next) => {
     });
   }
 
-  // let stringyData = fileSelected.buffer.toString("utf8");
   let stringyData = JSON.stringify(fileSelected.buffer).toString("base64");
   let unStringedData = JSON.parse(stringyData);
 
-  console.log(renamedFile);
+  console.log(unStringedData.data);
 
   try {
-    await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileSelected.mimetype, unStringedData);
+    await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileSelected.mimetype, unStringedData.data);
     res.redirect("/");
   } catch (err) {
     console.error(err);
@@ -277,7 +315,7 @@ exports.deleteFolderPost = async (req, res, next) => {
   const errors = validationResult(req);
   const folderId = req.params.id;
 
-  const folders = await db.getAllFolders();
+  const folders = await db.getAllFolders(res.locals.currentUser);
   if (!folderId) {
     return res.status(400).render("index-page", {
       errors: folderNameErr,
