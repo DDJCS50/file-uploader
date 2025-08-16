@@ -2,6 +2,11 @@ const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
 const bcrypt = require("bcryptjs");
 const { createBaseFiles } = require("../db/base-users");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  secure: true,
+});
 
 const alphaErr = "must only contain letters.";
 const passErr = "must be at least 8 characters long, contain at least one of each: lowercase letter, uppercase letter, number, symbol";
@@ -154,7 +159,7 @@ exports.updateFolderGet = async (req, res, next) => {
 exports.uploadFilePost = async (req, res, next) => {
   const fileSelected = req.file;
   const fileType = fileSelected.originalname.slice(fileSelected.originalname.indexOf("."));
-  const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-1").concat(fileType);
+  const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-2");
   let fileAlreadyExists = await db.getFileByName(renamedFile);
 
   const folders = await db.getAllFolders(res.locals.currentUser);
@@ -188,10 +193,37 @@ exports.uploadFilePost = async (req, res, next) => {
   let stringyData = JSON.stringify(fileSelected.buffer).toString("base64");
   let unStringedData = JSON.parse(stringyData);
 
-  console.log(unStringedData.data);
+  // console.log(unStringedData.data);
+
+  let realizedBuffer = Buffer.from(unStringedData.data);
+  console.log(realizedBuffer);
+
+  // Use the uploaded file's name as the asset's public ID and
+  // allow overwriting the asset with new versions
+  const options = {
+    use_filename: false,
+    public_id: renamedFile,
+    unique_filename: false,
+    overwrite: true,
+    resource_type: "auto",
+  };
 
   try {
-    await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileSelected.mimetype, unStringedData.data);
+    //     // Upload the image
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(options, (error, uploadResult) => {
+          if (error) {
+            return reject(error);
+          }
+          return resolve(uploadResult);
+        })
+        .end(realizedBuffer);
+    });
+    console.log("success", JSON.stringify(uploadResult, null, 2));
+
+    // await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileSelected.mimetype, unStringedData.data);
     res.redirect("/");
   } catch (err) {
     console.error(err);

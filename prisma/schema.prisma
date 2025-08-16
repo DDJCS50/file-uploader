@@ -46,6 +46,4 @@ model Files {
   folderId Int
   uploadedAt DateTime @default(now())
   size Int
-  mimetype String
-  buffer Bytes
 }
