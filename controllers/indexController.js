@@ -15,6 +15,7 @@ const folderNameErr = [{ msg: "Folder Not Found" }];
 const folderFoundErr = [{ msg: "Folder Already Exists" }];
 const fileFoundsErr = [{ msg: "File Already Exists" }];
 const noUserErr = [{ msg: "No user found" }];
+const noFileErr = [{ msg: "No file found" }];
 
 const validateFirstNameInput = [body("firstName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`First name ${alphaErr}`)];
 const validateLastNameInput = [body("lastName").trim().isAlpha("en-US", { ignore: " " }).withMessage(`Last name ${alphaErr}`)];
@@ -42,6 +43,16 @@ exports.loginGet = (req, res, next) => {
     console.error(error);
     return next(error);
   }
+};
+
+exports.logoutGet = (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      console.error(err);
+      return next(err);
+    }
+    res.redirect("/");
+  });
 };
 
 exports.signupGet = (req, res, next) => {
@@ -73,42 +84,42 @@ exports.uploadFileGet = async (req, res, next) => {
   }
 };
 
-exports.downloadFileGet = async (req, res, next) => {
-  const nameSelected = req.params.name;
-  const folder = await db.getFolderByName(nameSelected);
+// exports.downloadFileGet = async (req, res, next) => {
+//   const nameSelected = req.params.name;
+//   const folder = await db.getFolderByName(nameSelected);
 
-  const fileNameSelected = req.params.fileName;
-  let fileAlreadyExists = await db.getFileByName(fileNameSelected);
+//   const fileNameSelected = req.params.fileName;
+//   let fileAlreadyExists = await db.getFileByName(fileNameSelected);
 
-  const folders = await db.getAllFolders(res.locals.currentUser);
-  if (!fileAlreadyExists) {
-    return res.status(400).render("index-page", {
-      errors: fileFoundsErr,
-      folders: folders,
-    });
-  }
+//   const folders = await db.getAllFolders(res.locals.currentUser);
+//   if (!fileAlreadyExists) {
+//     return res.status(400).render("index-page", {
+//       errors: fileFoundsErr,
+//       folders: folders,
+//     });
+//   }
 
-  if (!folder) {
-    return res.status(400).render("index-page", {
-      errors: folderNameErr,
-      folders: folders,
-    });
-  }
+//   if (!folder) {
+//     return res.status(400).render("index-page", {
+//       errors: folderNameErr,
+//       folders: folders,
+//     });
+//   }
 
-  console.log(fileAlreadyExists);
+//   console.log(fileAlreadyExists);
 
-  let content = Buffer.from(fileAlreadyExists.buffer.buffer);
+//   let content = Buffer.from(fileAlreadyExists.buffer.buffer);
 
-  res.contentType(fileAlreadyExists.mimetype);
-  res.attachment(`${fileAlreadyExists.name}`);
+//   res.contentType(fileAlreadyExists.mimetype);
+//   res.attachment(`${fileAlreadyExists.name}`);
 
-  try {
-    res.send(content);
-  } catch (err) {
-    console.error(err);
-    return next(err);
-  }
-};
+//   try {
+//     res.send(content);
+//   } catch (err) {
+//     console.error(err);
+//     return next(err);
+//   }
+// };
 
 exports.createFolderGet = (req, res, next) => {
   try {
@@ -122,7 +133,6 @@ exports.createFolderGet = (req, res, next) => {
 exports.openFolderGet = async (req, res, next) => {
   const nameSelected = req.params.name;
   const folder = await db.getFolderByName(nameSelected);
-  const foldersSelected = res.locals.folders;
 
   const folders = await db.getAllFolders(res.locals.currentUser);
   if (!folder) {
@@ -158,11 +168,19 @@ exports.updateFolderGet = async (req, res, next) => {
 
 exports.uploadFilePost = async (req, res, next) => {
   const fileSelected = req.file;
-  const fileType = fileSelected.originalname.slice(fileSelected.originalname.indexOf("."));
-  const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-2");
-  let fileAlreadyExists = await db.getFileByName(renamedFile);
 
   const folders = await db.getAllFolders(res.locals.currentUser);
+  if (fileSelected == null || fileSelected == undefined) {
+    return res.status(400).render("index-page", {
+      errors: noFileErr,
+      folders: folders,
+    });
+  }
+  let fileType = fileSelected.originalname.slice(fileSelected.originalname.indexOf("."));
+  fileType = fileType.slice(1);
+  const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-new");
+  // TODO
+  let fileAlreadyExists = await db.getFileByName(renamedFile);
 
   if (fileAlreadyExists) {
     return res.status(400).render("index-page", {
@@ -196,7 +214,16 @@ exports.uploadFilePost = async (req, res, next) => {
   // console.log(unStringedData.data);
 
   let realizedBuffer = Buffer.from(unStringedData.data);
-  console.log(realizedBuffer);
+  // console.log(realizedBuffer);
+
+  console.log(fileType);
+
+  let resourceSelect = "auto";
+  let sanitize = "";
+  if (fileType == "svg") {
+    resourceSelect = "image";
+    sanitize = "sanitize";
+  }
 
   // Use the uploaded file's name as the asset's public ID and
   // allow overwriting the asset with new versions
@@ -205,12 +232,12 @@ exports.uploadFilePost = async (req, res, next) => {
     public_id: renamedFile,
     unique_filename: false,
     overwrite: true,
-    resource_type: "auto",
+    flags: sanitize,
+    resource_type: resourceSelect,
+    eager: [{ flags: "attachment" }],
   };
 
   try {
-    //     // Upload the image
-
     const uploadResult = await new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(options, (error, uploadResult) => {
@@ -222,8 +249,15 @@ exports.uploadFilePost = async (req, res, next) => {
         .end(realizedBuffer);
     });
     console.log("success", JSON.stringify(uploadResult, null, 2));
+    let fileUrlSelected = null;
+    if (uploadResult.eager) {
+      fileUrlSelected = uploadResult.eager[0].secure_url;
+    } else if (fileUrlSelected == undefined || fileUrlSelected == null) {
+      fileUrlSelected = uploadResult.secure_url;
+    }
+    console.log(fileUrlSelected);
 
-    // await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileSelected.mimetype, unStringedData.data);
+    await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileUrlSelected);
     res.redirect("/");
   } catch (err) {
     console.error(err);

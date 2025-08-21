@@ -10,7 +10,7 @@
 
 <body>
   <header>
-    <h1>Odin Drive</h1>
+    <a href="/">Odin Drive</a>
   </header>
   <main>
     <%- include("partials/errors.ejs") %>
@@ -47,10 +47,11 @@
                   <h2>
                     Upload Time: <%= file.uploadedAt %>
                   </h2>
-                  <form action="/download-file/<%= folder.name %>/<%= file.name %>" method="GET">
+                  <!-- <form action="/download-file/<%= folder.name %>/<%= file.name %>" method="GET">
                     <button type="submit" onclick="return confirm('Download File?');">Download File: <%= file.name %> </button>
 
-                  </form>
+                  </form> -->
+                  <a onclick="return confirm('Download File?');" href="<%= file.url %>">Download File: <%= file.name %></a>
                   <br>
                   <br>
                 </li>

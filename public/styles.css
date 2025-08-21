@@ -202,6 +202,12 @@ header ul {
 header h1 {
   font-size: 36px;
 }
+header ul {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
 #sidebar {
   height: 80vh;

@@ -42,7 +42,7 @@ async function getUserByUsername(usernameSelected) {
   });
   return foundUser;
 }
-
+//TODO
 async function getFolderByName(name) {
   const foundFolder = await db.query(prisma.Folders.findUnique, {
     where: {
@@ -96,21 +96,21 @@ async function insertFolderByName(name, userSelected) {
   return createdFolder;
 }
 
-async function insertFile(folderName, fileName, fileSize, fileMimetype, fileBuffer) {
+async function insertFile(folderName, fileName, fileSize, fileUrl) {
   const updatedFolder = await db.query(prisma.Folders.update, {
     where: {
       name: folderName,
     },
     data: {
       files: {
-        create: { size: fileSize, name: fileName, mimetype: fileMimetype, buffer: new Uint8Array(fileBuffer) },
+        create: { size: fileSize, name: fileName, url: fileUrl },
       },
     },
   });
 
   return updatedFolder;
 }
-
+//TODO
 async function getFileByName(fileName) {
   const fileFound = await db.query(prisma.Files.findUnique, {
     where: {

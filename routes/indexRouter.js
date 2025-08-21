@@ -24,12 +24,13 @@ const upload = multer({
 
 indexRouter.get("/", indexController.indexPageGet);
 indexRouter.get("/login", indexController.loginGet);
+indexRouter.get("/logout", indexController.logoutGet);
 indexRouter.get("/signup", indexController.signupGet);
 indexRouter.get("/upload-file/:name", indexController.uploadFileGet);
 indexRouter.get("/create-folder", indexController.createFolderGet);
 indexRouter.get("/open-folder/:name", indexController.openFolderGet);
 indexRouter.get("/update-folder/:name", indexController.updateFolderGet);
-indexRouter.get("/download-file/:name/:fileName", indexController.downloadFileGet);
+// indexRouter.get("/download-file/:name/:fileName", indexController.downloadFileGet);
 
 indexRouter.post("/delete-folder/:id", indexController.deleteFolderPost);
 indexRouter.post("/update-folder/:name", indexController.updateFolderPost);
