@@ -42,11 +42,12 @@ async function getUserByUsername(usernameSelected) {
   });
   return foundUser;
 }
-//TODO
-async function getFolderByName(name) {
-  const foundFolder = await db.query(prisma.Folders.findUnique, {
+
+async function getFolderByName(name, userId) {
+  const foundFolder = await db.query(prisma.Folders.findFirst, {
     where: {
       name: name,
+      endUserId: userId,
     },
     include: {
       files: true,
@@ -96,10 +97,10 @@ async function insertFolderByName(name, userSelected) {
   return createdFolder;
 }
 
-async function insertFile(folderName, fileName, fileSize, fileUrl) {
+async function insertFile(folderName, fileName, fileSize, fileUrl, folderIdSelected) {
   const updatedFolder = await db.query(prisma.Folders.update, {
     where: {
-      name: folderName,
+      id: folderIdSelected,
     },
     data: {
       files: {
@@ -110,21 +111,22 @@ async function insertFile(folderName, fileName, fileSize, fileUrl) {
 
   return updatedFolder;
 }
-//TODO
-async function getFileByName(fileName) {
-  const fileFound = await db.query(prisma.Files.findUnique, {
+
+async function getFileByName(fileName, folderIdSelected) {
+  const fileFound = await db.query(prisma.Files.findFirst, {
     where: {
       name: fileName,
+      folderId: folderIdSelected,
     },
   });
 
   return fileFound;
 }
 
-async function updateFolderByName(newName, oldName) {
+async function updateFolderById(newName, folderIdSelected) {
   const updateFolder = await prisma.Folders.update({
     where: {
-      name: oldName,
+      id: folderIdSelected,
     },
     data: {
       name: newName,
@@ -157,7 +159,7 @@ module.exports = {
   getFolderByName,
   getUserByUsername,
   insertFolderByName,
-  updateFolderByName,
+  updateFolderById,
   deleteFolderById,
   getFolderById,
   getAllFolders,

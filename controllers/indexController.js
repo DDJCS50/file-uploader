@@ -25,6 +25,7 @@ const validateFolderNameInput = [body("name").trim().isAlpha("en-US", { ignore: 
 
 exports.indexPageGet = async (req, res, next) => {
   let userSelected = res.locals.currentUser;
+
   const folders = await db.getAllFolders(userSelected);
 
   console.log(folders);
@@ -66,7 +67,9 @@ exports.signupGet = (req, res, next) => {
 
 exports.uploadFileGet = async (req, res, next) => {
   const nameSelected = req.params.name;
-  const folder = await db.getFolderByName(nameSelected);
+  const userSelected = res.locals.currentUser;
+
+  const folder = await db.getFolderByName(nameSelected, userSelected.id);
 
   const folders = await db.getAllFolders(res.locals.currentUser);
   if (!folder) {
@@ -86,7 +89,8 @@ exports.uploadFileGet = async (req, res, next) => {
 
 // exports.downloadFileGet = async (req, res, next) => {
 //   const nameSelected = req.params.name;
-//   const folder = await db.getFolderByName(nameSelected);
+//   const userSelected = res.locals.currentUser;
+//   const folder = await db.getFolderByName(nameSelected, userSelected.id);
 
 //   const fileNameSelected = req.params.fileName;
 //   let fileAlreadyExists = await db.getFileByName(fileNameSelected);
@@ -132,7 +136,8 @@ exports.createFolderGet = (req, res, next) => {
 
 exports.openFolderGet = async (req, res, next) => {
   const nameSelected = req.params.name;
-  const folder = await db.getFolderByName(nameSelected);
+  const userSelected = res.locals.currentUser;
+  const folder = await db.getFolderByName(nameSelected, userSelected.id);
 
   const folders = await db.getAllFolders(res.locals.currentUser);
   if (!folder) {
@@ -141,7 +146,7 @@ exports.openFolderGet = async (req, res, next) => {
       folders: folders,
     });
   }
-  /// TODO CREATE FILES AND DISPLAY THEM IN FOLDER PAGE
+
   const files = folder.files;
 
   try {
@@ -154,7 +159,8 @@ exports.openFolderGet = async (req, res, next) => {
 
 exports.updateFolderGet = async (req, res, next) => {
   const nameSelected = req.params.name;
-  const folder = await db.getFolderByName(nameSelected);
+  const userSelected = res.locals.currentUser;
+  const folder = await db.getFolderByName(nameSelected, userSelected.id);
 
   const files = folder.files;
 
@@ -179,8 +185,12 @@ exports.uploadFilePost = async (req, res, next) => {
   let fileType = fileSelected.originalname.slice(fileSelected.originalname.indexOf("."));
   fileType = fileType.slice(1);
   const renamedFile = fileSelected.originalname.slice(0, fileSelected.originalname.indexOf(".")).concat("-new");
-  // TODO
-  let fileAlreadyExists = await db.getFileByName(renamedFile);
+
+  const folderSelect = req.params.name;
+  const userSelected = res.locals.currentUser;
+  let folderExists = await db.getFolderByName(folderSelect, userSelected.id);
+
+  let fileAlreadyExists = await db.getFileByName(renamedFile, folderExists.id);
 
   if (fileAlreadyExists) {
     return res.status(400).render("index-page", {
@@ -189,11 +199,6 @@ exports.uploadFilePost = async (req, res, next) => {
     });
   }
 
-  const folderSelect = req.params.name;
-  let folderExists = await db.getFolderByName(folderSelect);
-
-  const user = res.locals.currentUser;
-
   if (!folderExists) {
     return res.status(400).render("index-page", {
       errors: folderNameErr,
@@ -201,7 +206,7 @@ exports.uploadFilePost = async (req, res, next) => {
     });
   }
 
-  if (!user) {
+  if (!userSelected) {
     return res.status(400).render("index-page", {
       errors: noUserErr,
       folders: folders,
@@ -211,12 +216,7 @@ exports.uploadFilePost = async (req, res, next) => {
   let stringyData = JSON.stringify(fileSelected.buffer).toString("base64");
   let unStringedData = JSON.parse(stringyData);
 
-  // console.log(unStringedData.data);
-
   let realizedBuffer = Buffer.from(unStringedData.data);
-  // console.log(realizedBuffer);
-
-  console.log(fileType);
 
   let resourceSelect = "auto";
   let sanitize = "";
@@ -257,7 +257,7 @@ exports.uploadFilePost = async (req, res, next) => {
     }
     console.log(fileUrlSelected);
 
-    await db.insertFile(folderSelect, renamedFile, fileSelected.size, fileUrlSelected);
+    await db.insertFile(renamedFile, fileSelected.size, fileUrlSelected, folderExists.id);
     res.redirect("/");
   } catch (err) {
     console.error(err);
@@ -325,7 +325,7 @@ exports.createFolderPost = [
     let { name } = req.body;
     let userSelected = res.locals.currentUser;
 
-    const folderSelected = await db.getFolderByName(name);
+    const folderSelected = await db.getFolderByName(name, userSelected.id);
 
     if (folderSelected) {
       return res.status(400).render("create-folder", {
@@ -358,8 +358,10 @@ exports.updateFolderPost = [
     const oldName = req.params.name;
 
     const { name } = req.body;
+    const userSelected = res.locals.currentUser;
 
-    const folderSelected = await db.getFolderByName(name);
+    const folderSelected = await db.getFolderByName(name, userSelected.id);
+    const oldFolderSelected = await db.getFolderByName(oldName, userSelected.id);
 
     if (folderSelected) {
       return res.status(400).render("update-folder", {
@@ -368,7 +370,7 @@ exports.updateFolderPost = [
     }
 
     try {
-      await db.updateFolderByName(name, oldName);
+      await db.updateFolderById(name, oldFolderSelected.id);
       res.redirect("/");
     } catch (err) {
       console.error("Error updating folder:", err);
