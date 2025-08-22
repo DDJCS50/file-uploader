@@ -97,7 +97,7 @@ async function insertFolderByName(name, userSelected) {
   return createdFolder;
 }
 
-async function insertFile(folderName, fileName, fileSize, fileUrl, folderIdSelected) {
+async function insertFile(fileName, fileSize, fileUrl, folderIdSelected) {
   const updatedFolder = await db.query(prisma.Folders.update, {
     where: {
       id: folderIdSelected,
