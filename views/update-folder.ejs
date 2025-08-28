@@ -12,67 +12,46 @@
   <header>
     <a href="/">Odin Drive</a>
   </header>
-  <main>
+  <main class="indexMain">
     <%- include("partials/errors.ejs") %>
       <% if (locals.currentUser) {%>
-        <div>
 
-          <ul>
-            <% if (locals.folder) {%>
 
-              <li>
-                <%= folder.name %>
-              </li>
 
-              <% } %>
-          </ul>
-        </div>
+        <% if (locals.folder) {%>
 
-        <div>
-
-          <ul>
-            <% if (locals.files) {%>
-              <% files.forEach(file=> { %>
-                <a href="/file/<%= file.id %>">
-
-                  <li>
-                    <%= file.name %>
-                      <br>
-                      <%= file.id %>
-                  </li>
-                </a>
-                <% }); %>
-                  <% } %>
-          </ul>
-        </div>
-
-        <form action="/update-folder/<%= folder.name %>" method="POST">
-          <div>
-            <label for="name">New Name: </label>
-            <input type="text" name="name" id="name">
+          <div class="indexLogin">
+            <h1>
+              <%= folder.name %>
+            </h1>
+            <% } %>
+              <form action="/update-folder/<%= folder.name %>" method="POST">
+                <div>
+                  <label for="name">New Name: </label>
+                  <input type="text" name="name" id="name">
+                </div>
+                <button type="submit">Update Folder</button>
+              </form>
           </div>
 
-          <button type="submit">Update Folder</button>
-        </form>
 
+          <% } else { %>
+            <h1>Login</h1>
+            <form action="/login" method="POST">
 
-        <% } else { %>
-          <h1>Login</h1>
-          <form action="/login" method="POST">
+              <div>
+                <label for="email">Email: </label>
+                <input type="email" name="email" id="email">
+              </div>
+              <div>
+                <label for="password">Password: </label>
+                <input type="password" name="password" id="password">
 
-            <div>
-              <label for="email">Email: </label>
-              <input type="email" name="email" id="email">
-            </div>
-            <div>
-              <label for="password">Password: </label>
-              <input type="password" name="password" id="password">
+              </div>
 
-            </div>
-
-            <button type="submit">Login</button>
-          </form>
-          <%}%>
+              <button type="submit">Login</button>
+            </form>
+            <%}%>
   </main>
   <footer>
     <h3>Copyright 2025 DDJCS50</h3>

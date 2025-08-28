@@ -12,82 +12,72 @@
   <header>
     <a href="/">Odin Drive</a>
   </header>
-  <main>
+  <main class="indexMain">
     <%- include("partials/errors.ejs") %>
       <% if (locals.currentUser) {%>
-        <div>
 
-          <ul>
-            <% if (locals.folder) {%>
 
-              <li>
-                <h2>
-                  <%= folder.name %>
-                </h2>
-              </li>
 
-              <% } %>
-          </ul>
-        </div>
+        <% if (locals.folder) {%>
 
-        <div>
 
-          <ul>
-            <% if (locals.files) {%>
-              <% files.forEach(file=> { %>
+          <div class="indexLogin">
+            <h1>
+              <%= folder.name %>
+            </h1>
+            <% } %>
+              <ul>
+                <% if (locals.files) {%>
+                  <% files.forEach(file=> { %>
+                    <li>
+                      <br>
+                      <h2>
+                        Name: <%= file.name %>
+                      </h2>
+                      <h2>
+                        Size: <%= (file.size/ 1000) %> MB
+                      </h2>
+                      <h2>
+                        Upload Time: <%= file.uploadedAt %>
+                      </h2>
+                      <!-- <form action="/download-file/<%= folder.name %>/<%= file.name %>" method="GET">
+                      <button type="submit" onclick="return confirm('Download File?');">Download File: <%= file.name %> </button>
+                    </form> -->
+                      <a onclick="return confirm('Download File?');" href="<%= file.url %>">Download File: <%= file.name %></a>
+                      <br>
+                      <br>
+                    </li>
+                    </a>
+                    <% }); %>
+                      <% } %>
+              </ul>
 
-                <li>
-                  <br>
-                  <h2>
-                    Name: <%= file.name %>
-                  </h2>
-                  <h2>
-                    Size: <%= (file.size/ 1000) %> MB
-                  </h2>
-                  <h2>
-                    Upload Time: <%= file.uploadedAt %>
-                  </h2>
-                  <!-- <form action="/download-file/<%= folder.name %>/<%= file.name %>" method="GET">
-                    <button type="submit" onclick="return confirm('Download File?');">Download File: <%= file.name %> </button>
+              <div class="openLinks">
+                <a href="/update-folder/<%= folder.name %>">Update Category</a>
+                <a href="/upload-file/<%= folder.name %>">Upload your files</a>
+                <form action="/delete-folder/<%= folder.id %>" method="POST" style="display:inline;">
+                  <button type="submit" onclick="return confirm('Are you sure you want to delete this folder?');">Delete Folder</button>
+                </form>
+              </div>
+          </div>
 
-                  </form> -->
-                  <a onclick="return confirm('Download File?');" href="<%= file.url %>">Download File: <%= file.name %></a>
-                  <br>
-                  <br>
-                </li>
-                </a>
-                <% }); %>
-                  <% } %>
-          </ul>
-        </div>
+          <% } else { %>
+            <h1>Login</h1>
+            <form action="/login" method="POST">
 
-        <div>
-          <a href="/update-folder/<%= folder.name %>">Update Category</a>
-        </div>
-        <div>
-          <a href="/upload-file/<%= folder.name %>">Upload your files</a>
-        </div>
-        <form action="/delete-folder/<%= folder.id %>" method="POST" style="display:inline;">
-          <button type="submit" onclick="return confirm('Are you sure you want to delete this folder?');">Delete Folder</button>
-        </form>
+              <div>
+                <label for="email">Email: </label>
+                <input type="email" name="email" id="email">
+              </div>
+              <div>
+                <label for="password">Password: </label>
+                <input type="password" name="password" id="password">
 
-        <% } else { %>
-          <h1>Login</h1>
-          <form action="/login" method="POST">
+              </div>
 
-            <div>
-              <label for="email">Email: </label>
-              <input type="email" name="email" id="email">
-            </div>
-            <div>
-              <label for="password">Password: </label>
-              <input type="password" name="password" id="password">
-
-            </div>
-
-            <button type="submit">Login</button>
-          </form>
-          <%}%>
+              <button type="submit">Login</button>
+            </form>
+            <%}%>
   </main>
   <footer>
     <h3>Copyright 2025 DDJCS50</h3>

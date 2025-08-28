@@ -23,7 +23,6 @@ const upload = multer({
 });
 
 indexRouter.get("/", indexController.indexPageGet);
-indexRouter.get("/login", indexController.loginGet);
 indexRouter.get("/logout", indexController.logoutGet);
 indexRouter.get("/signup", indexController.signupGet);
 indexRouter.get("/upload-file/:name", indexController.uploadFileGet);
@@ -46,7 +45,6 @@ indexRouter.post(
 );
 
 indexRouter.get("*", (req, res, next) => {
-  console.log("Route does not exist");
   res.status(404).send({
     status: 404,
     message: "Route does not exist",

@@ -206,7 +206,11 @@ header ul {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
+  gap: 8px;
+}
+header > a {
+  font-size: 38px;
+  font-weight: bold;
 }
 
 #sidebar {
@@ -238,9 +242,59 @@ footer {
   align-items: center;
 }
 
-.messageContainer {
+.indexLogin {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   flex-direction: column;
+  padding: 4px;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+.indexLogin h1 {
+  font-size: 32px;
+}
+.indexLogin div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mainError {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+}
+.mainError h2 {
+  color: darkred;
+}
+
+.indexMain {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  padding: 8px;
+}
+
+a {
+  text-decoration: none;
+}
+
+.openLinks {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.signupBox {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 4px;
+  width: -moz-fit-content;
+  width: fit-content;
 }

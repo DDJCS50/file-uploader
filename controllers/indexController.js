@@ -28,21 +28,10 @@ exports.indexPageGet = async (req, res, next) => {
 
   const folders = await db.getAllFolders(userSelected);
 
-  console.log(folders);
-
   try {
     res.render("index-page", { folders: folders });
   } catch (err) {
     return next(err);
-  }
-};
-
-exports.loginGet = (req, res, next) => {
-  try {
-    res.render("login");
-  } catch (error) {
-    console.error(error);
-    return next(error);
   }
 };
 
@@ -248,14 +237,13 @@ exports.uploadFilePost = async (req, res, next) => {
         })
         .end(realizedBuffer);
     });
-    console.log("success", JSON.stringify(uploadResult, null, 2));
+    // console.log("success", JSON.stringify(uploadResult, null, 2));
     let fileUrlSelected = null;
     if (uploadResult.eager) {
       fileUrlSelected = uploadResult.eager[0].secure_url;
     } else if (fileUrlSelected == undefined || fileUrlSelected == null) {
       fileUrlSelected = uploadResult.secure_url;
     }
-    console.log(fileUrlSelected);
 
     await db.insertFile(renamedFile, fileSelected.size, fileUrlSelected, folderExists.id);
     res.redirect("/");
